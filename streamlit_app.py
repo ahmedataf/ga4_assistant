@@ -1,3 +1,4 @@
+
 import streamlit as st
 from openai import OpenAI
 from google.cloud import bigquery
@@ -5,24 +6,19 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import re
 import os
+import json
+from google.oauth2 import service_account
 
-# ---- Setup ----
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
 st.title("📊 GA4 Analytics Assistant")
 st.caption("Ask natural language questions about your analytics data")
 
-# ---- Load secrets ----
 openai_client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-import json
-from google.oauth2 import service_account
-
 service_account_info = json.loads(st.secrets["GOOGLE_APPLICATION_CREDENTIALS"])
 credentials = service_account.Credentials.from_service_account_info(service_account_info)
 bq_client = bigquery.Client(credentials=credentials, project=credentials.project_id)
+PROJECT_ID = credentials.project_id
 
-PROJECT_ID = st.secrets["BQ_PROJECT_ID"]
-
-# ---- Prompt Template ----
 GPT_PROMPT_TEMPLATE = """You are a data assistant that maps user questions to function calls.
 
 Here are examples:
@@ -46,7 +42,6 @@ User: {user_input}
 Function:
 """
 
-# ---- Functions ----
 def get_function_call_from_gpt(user_input):
     prompt = GPT_PROMPT_TEMPLATE.format(user_input=user_input)
     response = openai_client.chat.completions.create(
@@ -118,7 +113,7 @@ def run_query(sql):
     job = bq_client.query(sql)
     return job.result().to_dataframe()
 
-# ---- Query Functions ----
+# Query functions
 def get_bounce_rate(start_date, end_date):
     return f"""
     SELECT SAFE_DIVIDE(
@@ -167,15 +162,25 @@ def get_revenue_by_country(start_date, end_date):
     ORDER BY total_revenue DESC
     """
 
+def get_top_countries_by_sessions(start_date, end_date, limit=5):
+    return f"""
+    SELECT country, COUNT(*) AS session_count
+    FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
+    WHERE session_start_date BETWEEN '{start_date}' AND '{end_date}'
+    GROUP BY country
+    ORDER BY session_count DESC
+    LIMIT {limit}
+    """
+
 function_registry = {
     "get_bounce_rate": get_bounce_rate,
     "get_sessions_by_country": get_sessions_by_country,
     "get_top_pages": get_top_pages,
     "get_sessions_by_device": get_sessions_by_device,
     "get_revenue_by_country": get_revenue_by_country,
+    "get_top_countries_by_sessions": get_top_countries_by_sessions,
 }
 
-# ---- UI ----
 st.markdown("#### Ask your question:")
 user_input = st.text_input("Example: What was the bounce rate last month?")
 
