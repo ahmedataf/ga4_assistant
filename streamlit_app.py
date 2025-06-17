@@ -13,7 +13,13 @@ st.caption("Ask natural language questions about your analytics data")
 
 # ---- Load secrets ----
 openai_client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-bq_client = bigquery.Client(project=st.secrets["BQ_PROJECT_ID"])
+import json
+from google.oauth2 import service_account
+
+service_account_info = json.loads(st.secrets["GOOGLE_APPLICATION_CREDENTIALS"])
+credentials = service_account.Credentials.from_service_account_info(service_account_info)
+bq_client = bigquery.Client(credentials=credentials, project=credentials.project_id)
+
 PROJECT_ID = st.secrets["BQ_PROJECT_ID"]
 
 # ---- Prompt Template ----
