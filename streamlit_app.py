@@ -128,59 +128,72 @@ def run_query(sql):
     return job.result().to_dataframe()
 
 # Query functions
+# Query functions (with date formatting fix)
 def get_bounce_rate(start_date, end_date):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT SAFE_DIVIDE(
       SUM(CASE WHEN pageviews = 1 THEN 1 ELSE 0 END),
       COUNT(*)
     ) AS bounce_rate
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
-    WHERE session_start_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE session_start_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
     """
 
 def get_sessions_by_country(country, start_date, end_date):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT country, COUNT(*) AS session_count
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
-    WHERE session_start_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE session_start_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
       AND country = '{country}'
     GROUP BY country
     ORDER BY session_count DESC
     """
 
 def get_top_pages(start_date, end_date, limit=10):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT page_title, COUNT(*) AS views
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_pages`
-    WHERE event_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE event_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
     GROUP BY page_title
     ORDER BY views DESC
     LIMIT {limit}
     """
 
 def get_sessions_by_device(start_date, end_date):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT device_category, COUNT(*) AS sessions
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
-    WHERE session_start_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE session_start_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
     GROUP BY device_category
     ORDER BY sessions DESC
     """
 
 def get_revenue_by_country(start_date, end_date):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT country, SUM(purchase_value) AS total_revenue
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_conversions`
-    WHERE event_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE event_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
     GROUP BY country
     ORDER BY total_revenue DESC
     """
 
 def get_top_countries_by_sessions(start_date, end_date, limit=5):
+    start_date_fmt = start_date.replace("-", "")
+    end_date_fmt = end_date.replace("-", "")
     return f"""
     SELECT country, COUNT(*) AS session_count
     FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
-    WHERE session_start_date BETWEEN '{start_date}' AND '{end_date}'
+    WHERE session_start_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
     GROUP BY country
     ORDER BY session_count DESC
     LIMIT {limit}
