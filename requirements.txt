@@ -3,3 +3,4 @@ openai
 google-cloud-bigquery
 python-dateutil
 pandas
+db-dtypes
