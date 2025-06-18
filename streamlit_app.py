@@ -209,7 +209,7 @@ function_registry = {
 }
 
 st.markdown("#### Ask your question:")
-user_input = st.text_input("Example: What was the bounce rate last month?")
+user_input = st.text_input("Example: Top 5 countries by sessions in January 2021?")
 
 if user_input:
     with st.spinner("Thinking..."):
