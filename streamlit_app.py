@@ -95,19 +95,33 @@ def resolve_date_range(phrase):
         end = (start + relativedelta(months=1)) - relativedelta(days=1)
     return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
+def is_date_expression(value):
+    """Returns True if value is a natural date phrase (not a YYYY-MM-DD format)."""
+    if re.match(r"\d{4}-\d{2}-\d{2}", value):
+        return False
+    return any(kw in value.lower() for kw in [
+        "last month", "this month", "last week", "this week",
+        "past 7 days", "q1", "q2", "q3", "q4"
+    ])
+
 def resolve_dates_in_kwargs(kwargs):
     resolved = kwargs.copy()
     for key, value in kwargs.items():
-        if isinstance(value, str):
+        if isinstance(value, str) and is_date_expression(value):
             try:
                 start, end = resolve_date_range(value)
                 if "start" in key.lower():
                     resolved["start_date"] = start
                 elif "end" in key.lower():
                     resolved["end_date"] = end
+                else:
+                    # If neither key says start/end, we infer both
+                    resolved["start_date"] = start
+                    resolved["end_date"] = end
             except Exception:
                 pass
     return resolved
+
 
 def run_query(sql):
     job = bq_client.query(sql)
