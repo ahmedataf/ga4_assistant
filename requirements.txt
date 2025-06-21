@@ -4,4 +4,7 @@ google-cloud-bigquery
 python-dateutil
 pandas
 db-dtypes
+langchain-community
+faiss-cpu
 langchain
+
