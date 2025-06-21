@@ -6,16 +6,11 @@ from dateutil.relativedelta import relativedelta
 import re
 import os
 import json
-import pickle
 from google.oauth2 import service_account
-from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
-
-# RAG components
+from langchain_openai import OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain.schema import Document
-from langchain.text_splitter import CharacterTextSplitter
 
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
@@ -29,15 +24,9 @@ credentials = service_account.Credentials.from_service_account_info(service_acco
 bq_client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 PROJECT_ID = credentials.project_id
 
-# Load FAISS index safely
-with open("index.pkl", "rb") as f:
-    obj = pickle.load(f)
-
-if isinstance(obj, tuple):
-    vectorstore, _ = obj
-else:
-    vectorstore = obj
-
+# Load FAISS index
+embeddings = OpenAIEmbeddings()
+vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 retriever = vectorstore.as_retriever()
 retriever.search_kwargs["k"] = 2
 
@@ -49,7 +38,6 @@ qa_chain = RetrievalQA.from_chain_type(
 )
 
 # Example function registry
-
 def get_sessions_by_country(start_date, end_date):
     start_date_fmt = start_date.replace("-", "")
     end_date_fmt = end_date.replace("-", "")
@@ -67,7 +55,6 @@ function_registry = {
 }
 
 # Function parser
-
 def parse_function_call(call_str):
     match = re.match(r"(\w+)\((.*)\)", call_str)
     if not match:
@@ -82,7 +69,6 @@ def parse_function_call(call_str):
     return function_registry.get(func_name), kwargs
 
 # Streamlit UI
-
 st.markdown("#### Ask your question:")
 user_input = st.text_input("Example: Which country had the most sessions in January 2021?")
 
