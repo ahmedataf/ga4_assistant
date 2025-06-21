@@ -12,6 +12,32 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 
+
+import streamlit as st
+
+st.header("🔎 Debug: Library Versions")
+
+try:
+    import langchain
+    st.write(f"LangChain version: {langchain.__version__}")
+except Exception as e:
+    st.write(f"LangChain not found: {e}")
+
+try:
+    import pydantic
+    st.write(f"Pydantic version: {pydantic.__version__}")
+except Exception as e:
+    st.write(f"Pydantic not found: {e}")
+
+try:
+    import faiss
+    st.write(f"FAISS version: {getattr(faiss, '__version__', 'n/a')}")
+except Exception as e:
+    st.write(f"FAISS not found: {e}")
+
+import sys
+st.write(f"Python version: {sys.version}")
+
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
 st.title("📊 GA4 Analytics Assistant")
