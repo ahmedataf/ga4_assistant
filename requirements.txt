@@ -4,7 +4,7 @@ google-cloud-bigquery
 python-dateutil
 pandas
 db-dtypes
-langchain-community
+langchain-community>=0.0.8
 faiss-cpu
-langchain
-
+langchain>=0.1.14,<0.2.0
+openai>=1.25.0
