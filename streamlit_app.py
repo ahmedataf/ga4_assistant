@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
-from langchain_community.vectorstores import FAISS
+from langchain.vectorstores import FAISS
 
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
