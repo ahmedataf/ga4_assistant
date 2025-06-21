@@ -31,7 +31,9 @@ PROJECT_ID = credentials.project_id
 # Load FAISS index
 with open("index.pkl", "rb") as f:
     vectorstore = pickle.load(f)
-retriever = vectorstore.as_retriever(search_type="similarity", k=2)
+retriever = vectorstore.as_retriever()
+retriever.search_kwargs["k"] = 2
+
 
 # Define RAG RetrievalQA chain
 llm = ChatOpenAI(model="gpt-4", temperature=0)
