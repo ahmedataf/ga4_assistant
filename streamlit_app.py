@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
@@ -26,9 +26,11 @@ PROJECT_ID = credentials.project_id
 
 # Load FAISS index
 embeddings = OpenAIEmbeddings()
-vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
-retriever = vectorstore.as_retriever()
-retriever.search_kwargs["k"] = 2
+vectorstore = FAISS.load_local(
+    "faiss_index",
+    embeddings,
+    allow_dangerous_deserialization=True)
+retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
 
 # Retrieval QA chain
 qa_chain = RetrievalQA.from_chain_type(
