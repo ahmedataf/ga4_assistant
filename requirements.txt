@@ -6,11 +6,12 @@ google-auth>=2.29.0
 google-auth-oauthlib>=1.2.0
 
 # LangChain ecosystem
-langchain>=0.1.14,<0.2.0
+langchain==0.3.26
 langchain-openai>=0.0.6
 langchain-community>=0.0.8
-faiss-cpu>=1.7.4
+faiss-cpu==1.11.0
 tiktoken>=0.6.0
+pydantic==2.11.7
 
 # Utility libraries
 pandas>=2.0.0
