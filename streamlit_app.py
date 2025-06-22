@@ -1,3 +1,4 @@
+
 import streamlit as st
 from openai import OpenAI
 from google.cloud import bigquery
@@ -6,11 +7,14 @@ from dateutil.relativedelta import relativedelta
 import re
 import os
 import json
+import inspect
 from google.oauth2 import service_account
 from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
+
+import session_functions  # or from analytics import session_functions
 
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
@@ -39,21 +43,11 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True
 )
 
-# Example function registry
-def get_sessions_by_country(start_date, end_date):
-    start_date_fmt = start_date.replace("-", "")
-    end_date_fmt = end_date.replace("-", "")
-    return f"""
-    SELECT country, COUNT(*) AS session_count
-    FROM `{PROJECT_ID}.ga4_sample_ai_agent.flat_sessions`
-    WHERE session_start_date BETWEEN '{start_date_fmt}' AND '{end_date_fmt}'
-    GROUP BY country
-    ORDER BY session_count DESC
-    """
-
+# Dynamically register all functions from session_functions
 function_registry = {
-    "get_sessions_by_country": get_sessions_by_country,
-    # Add more function mappings as needed
+    name: fn
+    for name, fn in inspect.getmembers(session_functions, inspect.isfunction)
+    if name.startswith("get_")
 }
 
 # Function parser
