@@ -10,6 +10,7 @@ import json
 import inspect
 from google.oauth2 import service_account
 from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
@@ -36,11 +37,34 @@ vectorstore = FAISS.load_local(
     allow_dangerous_deserialization=True)
 retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
 
-# Retrieval QA chain
+# Custom prompt to force function-only responses
+custom_prompt = PromptTemplate.from_template("""
+You are an analytics assistant. You have access to predefined functions.
+Each function has a name and parameters.
+
+Respond to user questions by returning ONLY the exact Python function call.
+Do NOT explain, do NOT add commentary, and DO NOT return any natural language.
+
+Format:
+function_name(param1='value1', param2='value2')
+
+Examples:
+Q: What is the bounce rate by traffic source for May 2025?
+A: get_bounce_rate_traffic_source_flat_sessions(start_date='2025-05-01', end_date='2025-05-31')
+
+Q: How many sessions came from organic traffic last month?
+A: get_sessions_organic_traffic_flat_sessions(start_date='2025-05-01', end_date='2025-05-31')
+
+Now answer:
+Q: {question}
+""")
+
+# Retrieval QA chain with custom prompt
 qa_chain = RetrievalQA.from_chain_type(
     llm=ChatOpenAI(model="gpt-4", temperature=0),
     retriever=retriever,
-    return_source_documents=True
+    chain_type_kwargs={"prompt": custom_prompt},
+    return_source_documents=False
 )
 
 # Dynamically register all functions from session_functions
@@ -70,8 +94,8 @@ user_input = st.text_input("Example: Which country had the most sessions in Janu
 
 if user_input:
     with st.spinner("Thinking..."):
-        result = qa_chain(user_input)
-        function_call = result['result']
+        # Directly get the function call string
+        function_call = qa_chain.run(user_input)
         st.markdown(f"**🧠 GPT Function Call:** `{function_call}`")
 
         func, kwargs = parse_function_call(function_call)
