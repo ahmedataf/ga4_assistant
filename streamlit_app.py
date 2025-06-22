@@ -15,7 +15,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 
-import session_functions  # or from analytics import session_functions
+from analytics import session_functions # or from analytics import session_functions
 
 
 # Streamlit app config
