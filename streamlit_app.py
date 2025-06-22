@@ -16,6 +16,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 
 import session_functions  # or from analytics import session_functions
+docs = retriever.get_relevant_documents("bounce rate May")
+st.write([d.metadata.get("name") for d in docs])
 
 # Streamlit app config
 st.set_page_config(page_title="GA4 Analytics Assistant", layout="wide")
